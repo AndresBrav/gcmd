@@ -12,14 +12,14 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// Estilos globales de LipGloss para una estética premium
+// Global LipGloss styles for a premium aesthetic
 var (
 	docStyle = lipgloss.NewStyle().Margin(1, 2)
 
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
 			Foreground(lipgloss.Color("#FAFAFA")).
-			Background(lipgloss.Color("#7D56F4")). // Violeta vibrante
+			Background(lipgloss.Color("#7D56F4")). // Vibrant Violet
 			Padding(0, 2).
 			MarginBottom(1)
 
@@ -31,12 +31,12 @@ var (
 
 	cmdNameStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.Color("#00FFCC")) // Cyan/Turquesa eléctrico
+			Foreground(lipgloss.Color("#00FFCC")) // Electric Cyan/Turquoise
 
 	categoryTagStyle = lipgloss.NewStyle().
 				Bold(true).
 				Foreground(lipgloss.Color("#FFFFFF")).
-				Background(lipgloss.Color("#04B575")). // Verde esmeralda para el tag
+				Background(lipgloss.Color("#04B575")). // Emerald Green tag
 				Padding(0, 1)
 
 	descStyle = lipgloss.NewStyle().
@@ -61,7 +61,7 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		// Si el usuario está filtrando/buscando en la lista, permitimos que el componente de lista maneje las teclas.
+		// If the user is filtering/searching the list, let the list component handle key inputs.
 		if m.list.FilterState() == list.Filtering {
 			break
 		}
@@ -72,13 +72,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 
 		case "enter":
-			// Obtener el ítem seleccionado de la lista
+			// Get the selected item from the list
 			selectedItem := m.list.SelectedItem()
 			if selectedItem != nil {
 				cmd, ok := selectedItem.(commands.GitCommand)
 				if ok {
 					m.selectedCmd = cmd
-					// Copiar al portapapeles
+					// Copy to clipboard
 					err := clipboard.WriteAll(cmd.Cmd)
 					if err == nil {
 						m.copied = true
@@ -91,7 +91,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
-		// Redimensionar la lista. Dejamos espacio abajo (10 líneas) para la tarjeta de vista previa.
+		// Resize the list. Leave room at the bottom (10 lines) for the preview card.
 		m.list.SetSize(msg.Width-h, msg.Height-v-10)
 	}
 
@@ -114,15 +114,15 @@ func (m model) View() string {
 				Bold(true).
 				Foreground(lipgloss.Color("#00FFCC"))
 
-			return fmt.Sprintf("\n%s\n\n📌 Comando copiado: %s\n💡 ¡Listo para pegar con Ctrl+V y ejecutar!\n\n",
-				successHeaderStyle.Render("📋 COPIADO AL PORTAPAPELES"),
+			return fmt.Sprintf("\n%s\n\n📌 Copied command: %s\n💡 Ready to paste with Ctrl+V and run!\n\n",
+				successHeaderStyle.Render("📋 COPIED TO CLIPBOARD"),
 				cmdStyle.Render(m.selectedCmd.Cmd),
 			)
 		}
-		return "\n👋 ¡Hasta luego! Espero que te sirva esta herramienta.\n\n"
+		return "\n👋 Goodbye! Hope you find this tool useful.\n\n"
 	}
 
-	// Construir la tarjeta de vista previa detallada del comando seleccionado
+	// Build the detailed preview card of the selected command
 	var previewCard string
 	selectedItem := m.list.SelectedItem()
 	if selectedItem != nil {
@@ -131,30 +131,30 @@ func (m model) View() string {
 			tag := categoryTagStyle.Render(" " + cmd.Category + " ")
 			titleLine := fmt.Sprintf("%s    %s", cmdNameStyle.Render(cmd.Cmd), tag)
 			descLine := descStyle.Render(cmd.LongDesc)
-			instructions := helpStyle.Render("Presiona [Enter] para copiar al portapapeles • [/] Buscar • [q] Salir")
+			instructions := helpStyle.Render("Press [Enter] to copy to clipboard • [/] Search • [q] Quit")
 
 			previewCard = cardStyle.Render(
 				fmt.Sprintf("%s\n\n%s\n\n%s", titleLine, descLine, instructions),
 			)
 		}
 	} else {
-		previewCard = cardStyle.Render("No hay comandos disponibles.")
+		previewCard = cardStyle.Render("No commands available.")
 	}
 
-	// Renderizar título general, la lista y la tarjeta de vista previa abajo
-	title := titleStyle.Render("🚀 GIT CHEATSHEET INTERACTIVO 🚀")
+	// Render title, list, and preview card below
+	title := titleStyle.Render("🚀 INTERACTIVE GIT CHEATSHEET 🚀")
 	return docStyle.Render(fmt.Sprintf("%s\n\n%s\n%s", title, m.list.View(), previewCard))
 }
 
 func main() {
-	// 1. Cargar comandos
+	// 1. Load commands
 	gitCmds := commands.GetCommands()
 	items := make([]list.Item, len(gitCmds))
 	for i, v := range gitCmds {
 		items[i] = v
 	}
 
-	// 2. Crear delegado de lista predeterminado con estilos personalizados
+	// 2. Create default list delegate with custom styling
 	delegate := list.NewDefaultDelegate()
 	delegate.Styles.SelectedTitle = delegate.Styles.SelectedTitle.
 		Foreground(lipgloss.Color("#7D56F4")).
@@ -163,25 +163,25 @@ func main() {
 	delegate.Styles.SelectedDesc = delegate.Styles.SelectedDesc.
 		Foreground(lipgloss.Color("#9B87F5"))
 
-	// 3. Inicializar el componente de lista
-	// Dimensiones iniciales predeterminadas (se actualizan dinámicamente con WindowSizeMsg)
+	// 3. Initialize list component
+	// Default initial sizes (will be updated dynamically via WindowSizeMsg)
 	cmdList := list.New(items, delegate, 80, 16)
-	cmdList.Title = "Selecciona o busca un comando de Git:"
+	cmdList.Title = "Select or search for a Git command:"
 	cmdList.Styles.Title = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#FAFAFA")).
 		Bold(true)
 
-	// Ocultar barra de ayuda del list predeterminado ya que tenemos la nuestra personalizada abajo
+	// Hide default help since we show our own customized layout at the bottom
 	cmdList.SetShowHelp(false)
 
 	initialModel := model{
 		list: cmdList,
 	}
 
-	// 4. Iniciar el loop de Bubble Tea
+	// 4. Start Bubble Tea loop
 	p := tea.NewProgram(initialModel, tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
-		fmt.Printf("Ocurrió un error al ejecutar la TUI: %v\n", err)
+		fmt.Printf("An error occurred while running the TUI: %v\n", err)
 		os.Exit(1)
 	}
 }
