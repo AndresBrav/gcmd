@@ -180,8 +180,14 @@ func main() {
 
 	// 4. Start Bubble Tea loop
 	p := tea.NewProgram(initialModel, tea.WithAltScreen())
-	if _, err := p.Run(); err != nil {
+	finalModel, err := p.Run()
+	if err != nil {
 		fmt.Printf("An error occurred while running the TUI: %v\n", err)
 		os.Exit(1)
+	}
+
+	// 5. After the TUI closes, print the selected command directly to the terminal
+	if m, ok := finalModel.(model); ok && m.selectedCmd.Cmd != "" {
+		fmt.Println(m.selectedCmd.Cmd)
 	}
 }
